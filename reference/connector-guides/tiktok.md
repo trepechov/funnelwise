@@ -5,11 +5,6 @@ and, per video, views, likes, comments and shares. It has **no** views by day, a
 traffic data, and no access to other creators. The sign-in belongs to one TikTok account, so the
 data is automatically the brand's own.
 
-## Easy path: Metricool (`via: metricool`)
-
-If the brand already uses Metricool, connect TikTok there (it may offer more than the Display
-API; being verified in `docs/spikes/0.3-easy-path-audit.md`).
-
 ## Own app (`via: own`, works in Claude Desktop, no terminal)
 
 About 20 minutes, once. No TikTok review is needed because the app stays in **Sandbox**.
@@ -21,8 +16,9 @@ About 20 minutes, once. No TikTok review is needed because the app stays in **Sa
 3. Login Kit → **Desktop** → redirect URI exactly `http://localhost:3455/callback/`.
 4. Keep the app in **Sandbox** and under **Sandbox settings → Target users** add the brand's TikTok
    account.
-5. Copy **Client key** and **Client secret** and give them to Claude: it saves them with
-   `fw_save_credential(kind="tiktok", …)` (they pass through the chat; that's OK for these two).
+5. **Client key** and **Client secret**: Claude runs `fw_prepare_credentials tiktok`, which creates
+   `tiktok.json` in the brand's private credentials folder and opens it in your text editor.
+   Replace the two `<paste …>` values (keep the quotes) and save. They never pass through the chat.
 6. Claude saves the username (`fw_set_connector tiktok own <username without @>`) and runs
    `tiktok_login_start`. Open the link **logged in as the brand's TikTok account** and approve.
    - Same computer: done automatically; Claude checks with `tiktok_login_status`.

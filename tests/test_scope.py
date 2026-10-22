@@ -146,7 +146,8 @@ def test_tiktok_not_signed_in_message(brand_dir):
         tiktok.tiktok_get_profile()
 
 
-@pytest.mark.parametrize("script", ["core.py", "ga4.py", "search_console.py", "spotify.py", "tiktok.py"])
+@pytest.mark.parametrize("script", ["core.py", "ga4.py", "search_console.py", "spotify.py", "tiktok.py",
+                                    "youtube.py", "instagram.py", "facebook.py"])
 def test_every_server_lists_tools_without_brand(script):
     """A server must start even with no brand folder: tools then explain what to do."""
     replies = run_server(script, handshake())

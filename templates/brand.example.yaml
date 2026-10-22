@@ -1,7 +1,8 @@
 # Funnelwise brand settings: one file per brand folder.
 # The onboarding skill writes this for you; you can also copy and edit it.
 # Never put passwords, tokens or keys here: they live in the private
-# credentials folder (~/.funnelwise/credentials/<brand>/).
+# credentials folder: .credentials/ in this folder, or ~/.funnelwise/credentials/<brand>/
+# when this folder is synced to iCloud, Dropbox, Google Drive or OneDrive.
 
 brand:
   name: "Acme Outdoor"
@@ -10,20 +11,26 @@ brand:
   language: "en"                    # every report is written in this language
   colors: { primary: "#1F6F5C", accent: "#F2A541" }
   # logo: "notes/logo.png"          # optional, relative to this folder
+  # Every channel the brand has, connected or not (onboarding asks for these first).
+  channels:
+    youtube: "https://www.youtube.com/@acmeoutdoor"
+    instagram: "https://www.instagram.com/acmeoutdoor/"
+    facebook: "https://www.facebook.com/acmeoutdoor"
+    tiktok: "https://www.tiktok.com/@acmeoutdoor"
+    spotify: "https://open.spotify.com/show/0000000000000000000000"
 
 # One block per connected platform. Leave a platform out = not connected;
 # reports then say "data not available" for it instead of failing.
-#   via: own        Funnelwise's local server with your own credentials
-#        metricool  the Metricool connector (sign-in, no developer app)
+#   via: own        Funnelwise's local server with your own credentials (normal path)
 #        windsor    the Windsor.ai connector
 #        manual     numbers you add from exports
 # The ID after `via` is the ONE account this brand uses; Funnelwise refuses others.
 connectors:
   ga4:       { via: own, property_id: "123456789" }                 # Admin > Property details
   gsc:       { via: own, site_url: "https://www.acme-outdoor.example/" }   # or sc-domain:acme-outdoor.example
-  youtube:   { via: metricool, channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", handle: "@acmeoutdoor" }
-  instagram: { via: metricool, username: "acmeoutdoor" }
-  facebook:  { via: metricool, page_id: "100000000000000" }
+  youtube:   { via: own, channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", handle: "@acmeoutdoor" }
+  instagram: { via: own, username: "acmeoutdoor" }
+  facebook:  { via: own, page_id: "100000000000000" }
   tiktok:    { via: own, username: "acmeoutdoor" }
   spotify:   { via: own, show_id: "0000000000000000000000" }       # from the show's open.spotify.com link
   # semrush: { via: semrush, domain: "acme-outdoor.example", database: "us" }

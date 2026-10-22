@@ -18,8 +18,8 @@ judged by numbers as of today. Ask nothing else.
 
 For each platform, a sample of the last 90 days' content (YouTube up to 50 videos; Instagram up to
 50 posts; TikTok up to 60 videos via `cursor`; Facebook up to 25 posts). For each item record: id,
-title/caption (first 80 chars), publish date, **format** (YouTube: long-form / Short ≤ 60 s or
-vertical / live; Instagram: reel / carousel / image; TikTok: video; Facebook: video / link / image),
+title/caption (first 80 chars), publish date, **format** (YouTube: long-form / Short ≤ 3 min /
+live, as `youtube_list_videos` labels them; Instagram: reel / carousel / image; TikTok: video; Facebook: video / link / image),
 duration, views (or reach/impressions), likes, comments, shares/saves.
 
 ## 3. Analyse (do the arithmetic carefully; show the numbers)

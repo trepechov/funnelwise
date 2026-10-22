@@ -9,6 +9,7 @@ naming contract, and diffs a snapshot against the previous one.
 from __future__ import annotations
 
 import copy
+import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -22,13 +23,13 @@ import yaml  # noqa: E402  (vendored)
 from lib import credentials as creds  # noqa: E402
 from lib import snapshots  # noqa: E402
 from lib.mcp_stdio import Server, ToolError  # noqa: E402
-from lib.workspace import (BRAND_FILE, CONNECTORS, SCOPE_FIELDS, Brand, load_brand,  # noqa: E402
-                           load_yaml, set_active_brand, validate_brand)
+from lib.workspace import (BRAND_FILE, CONNECTORS, SCOPE_FIELDS, Brand, funnelwise_home,  # noqa: E402
+                           load_brand, load_yaml, set_active_brand, synced_location, validate_brand)
 
 VERSION = load_yaml(PLUGIN_ROOT / ".claude-plugin" / "plugin.json")["version"]  # JSON is valid YAML
 CATALOG_FILE = PLUGIN_ROOT / "reference" / "skill-catalog.yaml"
 FOLDERS = ("reports", "data", "notes")
-OWN_PATH = ("ga4", "gsc", "spotify", "tiktok")
+OWN_PATH = ("ga4", "gsc", "spotify", "tiktok", "youtube", "instagram", "facebook")
 
 server = Server("funnelwise", VERSION, instructions=(
     "Funnelwise core tools. Call fw_brand first in every Funnelwise workflow: it returns the active brand "
@@ -51,6 +52,9 @@ def _brand_summary(brand: Brand) -> dict:
         "brand": brand.data["brand"],
         "connectors": connectors,
         "not_connected": [c for c in CONNECTORS if c not in connectors],
+        # Channels the brand has (brand.channels) that no connector reads yet: onboarding's to-do list.
+        "channels_not_connected": [c for c in (brand.data["brand"].get("channels") or {})
+                                   if c in CONNECTORS and c not in connectors],
         "competitors": brand.data.get("competitors") or [],
         "sponsorship": brand.data.get("sponsorship") or {},
         "credentials_dir": str(brand.credentials_dir()),
@@ -110,7 +114,7 @@ def fw_use_brand(folder: str) -> dict:
 
 @server.tool()
 def fw_init_brand(folder: str, name: str, language: str, website: str = "", short: str = "",
-                  colors: Optional[dict] = None) -> dict:
+                  colors: Optional[dict] = None, channels: Optional[dict] = None) -> dict:
     """Create a brand folder: brand.yaml plus reports/, data/ and notes/. Makes it the active brand.
     Connect platforms afterwards with fw_set_connector. Fails if brand.yaml already exists.
 
@@ -121,6 +125,9 @@ def fw_init_brand(folder: str, name: str, language: str, website: str = "", shor
         website: Brand website, starting with https:// (optional).
         short: Short name or abbreviation (optional).
         colors: Optional {"primary": "#RRGGBB", "accent": "#RRGGBB"} for HTML reports.
+        channels: Public link or handle of each channel the brand has, connected or not, e.g.
+            {"youtube": "https://www.youtube.com/@acme", "instagram": "https://www.instagram.com/acme/"}.
+            Keys: youtube, instagram, facebook, tiktok, spotify, linkedin, x.
     """
     d = Path(folder).expanduser()
     if (d / BRAND_FILE).exists():
@@ -132,6 +139,8 @@ def fw_init_brand(folder: str, name: str, language: str, website: str = "", shor
         brand["website"] = website
     if colors:
         brand["colors"] = colors
+    if channels:
+        brand["channels"] = {k: v.strip() if isinstance(v, str) else v for k, v in channels.items()}
     data = {"brand": brand, "connectors": {}, "competitors": [], "sponsorship": {"past_sponsors": []}}
     errors = validate_brand(data)
     if errors:
@@ -174,8 +183,8 @@ def fw_set_connector(connector: str, via: str, scope_id: str = "", extra: Option
 
     Args:
         connector: One of ga4, gsc, youtube, instagram, facebook, tiktok, spotify, semrush.
-        via: "own" (Funnelwise's local server with your own credentials), "metricool", "windsor",
-            "google-ga4-mcp", "semrush" or "manual" (numbers typed in or exported by hand).
+        via: "own" (Funnelwise's local server with your own credentials: the normal path for every platform),
+            "windsor", "google-ga4-mcp", "semrush" or "manual" (numbers typed in or exported by hand).
         scope_id: The one account this brand uses: GA4 property ID, Search Console site URL
             (https://www.example.com/ or sc-domain:example.com), YouTube channel ID (UC…), Instagram or
             TikTok username (no @), Facebook Page ID, Spotify show ID, Semrush domain.
@@ -240,7 +249,42 @@ def fw_connection_status() -> dict:
     Funnelwise's own servers) whether the credential files are in place, with the next step if not.
     Makes no network calls; the connection-check skill does the live test."""
     brand = load_brand()
-    return {"brand": brand.name, "credentials_dir": str(brand.credentials_dir()), "connectors": _connection_status(brand)}
+    out = {"brand": brand.name, "credentials_dir": str(brand.credentials_dir()), "connectors": _connection_status(brand)}
+    synced = synced_location(brand.credentials_dir())
+    if synced:
+        out["warning"] = (f"The credentials folder is synced by {synced}, so the keys in it leave this computer. "
+                          f"Move it to {funnelwise_home() / 'credentials' / brand.slug}.")
+    return out
+
+
+def _open_in_editor(path: str) -> bool:
+    cmd = {"darwin": ["open", "-t", path], "win32": ["notepad", path]}.get(sys.platform, ["xdg-open", path])
+    try:
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except OSError:
+        return False
+
+
+@server.tool()
+def fw_prepare_credentials(connector: str, open_in_editor: bool = True) -> dict:
+    """Create the credential file(s) a platform needs, filled with "<paste …>" placeholders, in the brand's
+    private credentials folder (mode 600, never overwrites a file). The user replaces the placeholders in a
+    text editor and saves; the secrets never pass through the chat. Check progress with fw_connection_status
+    (it names fields that are still placeholders, never values). Never read these files yourself.
+
+    Args:
+        connector: youtube, instagram, facebook (Instagram and Facebook share one file), spotify, tiktok.
+            ga4/gsc use a downloaded key: fw_import_credential.
+        open_in_editor: Open each new or unfinished file in the computer's text editor.
+    """
+    brand = load_brand()
+    out = creds.prepare_templates(brand, connector)
+    if open_in_editor:
+        for f in out["files"]:
+            if f["to_fill"]:
+                f["opened_in_editor"] = _open_in_editor(f["file"])
+    return out
 
 
 @server.tool()
@@ -250,7 +294,7 @@ def fw_import_credential(kind: str, source_path: str) -> dict:
     Preferred over fw_save_credential because the secret never passes through the chat.
 
     Args:
-        kind: google-service-account, google-oauth-client, spotify or tiktok.
+        kind: google-service-account, google-oauth-client, meta, spotify or tiktok.
         source_path: Absolute path of the downloaded .json file, e.g. ~/Downloads/acme-1234.json.
     """
     brand = load_brand()
@@ -268,11 +312,11 @@ def fw_import_credential(kind: str, source_path: str) -> dict:
 @server.tool()
 def fw_save_credential(kind: str, values: dict) -> dict:
     """Save credential values (e.g. a Spotify client ID and secret) to this brand's private credentials folder.
-    Values typed into the chat are part of the conversation; prefer fw_import_credential with a file when
-    one exists.
+    Values typed into the chat are part of the conversation: prefer fw_prepare_credentials (the user fills a
+    file) or fw_import_credential (a downloaded file). Use this only if the user insists.
 
     Args:
-        kind: spotify ({client_id, client_secret}), tiktok ({client_key, client_secret}).
+        kind: spotify ({client_id, client_secret}), tiktok ({client_key, client_secret}), meta ({access_token}).
         values: The fields listed for the kind.
     """
     if kind in ("google-service-account", "google-oauth-client"):

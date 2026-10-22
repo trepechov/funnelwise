@@ -18,9 +18,9 @@ DEMO_BRAND = {
     "connectors": {
         "ga4": {"via": "own", "property_id": "123456789"},
         "gsc": {"via": "own", "site_url": "https://www.acme-outdoor.example/"},
-        "youtube": {"via": "metricool", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"},
-        "instagram": {"via": "metricool", "username": "acmeoutdoor"},
-        "facebook": {"via": "metricool", "page_id": "100000000000001"},
+        "youtube": {"via": "own", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"},
+        "instagram": {"via": "own", "username": "acmeoutdoor"},
+        "facebook": {"via": "own", "page_id": "100000000000001"},
         "tiktok": {"via": "own", "username": "acmeoutdoor"},
         "spotify": {"via": "own", "show_id": "0000000000000000000001"},
     },

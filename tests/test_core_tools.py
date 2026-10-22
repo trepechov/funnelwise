@@ -22,11 +22,13 @@ def test_onboarding_flow_end_to_end(tmp_path):
     assert find_brand_dir() == folder.resolve()  # active-brand marker set
     with pytest.raises(ToolError, match="already exists"):
         core.fw_init_brand(str(folder), "Nova Coffee", "de")
+    core.fw_update_brand({"brand": {"channels": {"youtube": "@nova", "instagram": "novacoffee", "x": "@nova"}}})
+    assert core.fw_brand()["channels_not_connected"] == ["youtube", "instagram"]
 
     saved = core.fw_set_connector("gsc", "own", "sc-domain:nova.example")
     assert saved["status"]["credentials"]["ready"] is False
     assert "service-account" in saved["status"]["credentials"]["next_steps"][0]
-    core.fw_set_connector("instagram", "metricool", "novacoffee")
+    core.fw_set_connector("instagram", "windsor", "novacoffee")
     with pytest.raises(ToolError, match="required when via is `own`"):
         core.fw_set_connector("spotify", "own")
     with pytest.raises(ToolError, match="Unknown connector"):
@@ -37,14 +39,15 @@ def test_onboarding_flow_end_to_end(tmp_path):
     key.write_text(json.dumps({"type": "service_account", "client_email": "fw@nova.iam.gserviceaccount.com",
                                "private_key": "-----BEGIN PRIVATE KEY-----\nx\n-----END PRIVATE KEY-----\n"}))
     imp = core.fw_import_credential("google-service-account", str(key))
-    saved_path = tmp_path / "fwhome" / "credentials" / "nova" / "google-service-account.json"
+    saved_path = folder / ".credentials" / "google-service-account.json"  # not a synced folder: hidden, in the brand
     assert imp["saved_to"] == str(saved_path)
     assert imp["service_account_email"] == "fw@nova.iam.gserviceaccount.com"
     assert stat.S_IMODE(os.stat(saved_path).st_mode) == 0o600
     assert stat.S_IMODE(os.stat(saved_path.parent).st_mode) == 0o700
     status = core.fw_connection_status()["connectors"]
     assert status["gsc"]["credentials"]["ready"] is True
-    assert status["instagram"]["via"] == "metricool" and "connector settings" in status["instagram"]["note"]
+    assert status["instagram"]["via"] == "windsor" and "connector settings" in status["instagram"]["note"]
+    assert (folder / ".credentials" / ".gitignore").read_text() == "*\n"
     assert status["tiktok"] == {"connected": False}
 
     core.fw_update_brand({"sponsorship": {"past_sponsors": ["Bean Co"]}, "brand": {"colors": {"primary": "#112233"}}})
@@ -111,7 +114,7 @@ def test_brand_summary_includes_profile(brand_dir):
     (brand_dir / "notes" / "profile.md").write_text("# Profile\n- **Role:** Data analyst\n")
     out = core.fw_brand()
     assert out["profile"].startswith("# Profile")
-    assert out["connectors"]["youtube"] == {"via": "metricool", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"}
+    assert out["connectors"]["youtube"] == {"via": "own", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"}
     assert out["not_connected"] == ["semrush"]
 
 

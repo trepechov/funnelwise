@@ -18,12 +18,15 @@ retries, no debugging, no re-authenticating inside this check. Load any deferred
 |---|---|---|
 | GA4 | `ga_run_report(date_from="yesterday", date_to="today", metrics=[activeUsers or eventCount], dimensions=[one of: country, deviceCategory, eventName, sessionDefaultChannelGroup], limit=5)` | the dimension and the metric |
 | Search Console | `gsc_performance_overview(date_from=today-5d, date_to=today-3d, compare_previous=false)` | which number anchors the insight: clicks, impressions, CTR, position |
-| YouTube, Instagram, Facebook | One cheap profile/stats call on the connector the brand chose (Metricool etc.), for the brand's own channel/username/Page ID | the one number it returned |
+| YouTube | `youtube_channel()` or `youtube_analytics(date_from=today-9d, date_to=today-2d, metrics=[views])` | subscribers vs. last week's views (the second also proves the Analytics sign-in) |
+| Instagram | `instagram_profile()` or `instagram_list_media(limit=3)` | followers vs. newest post's likes |
+| Facebook | `facebook_page()` or `facebook_list_posts(limit=3)` | followers vs. newest post's reactions |
 | TikTok | `tiktok_get_profile()` or `tiktok_list_videos(max_count=3)` | profile totals vs. newest/most-viewed of 3 |
 | Spotify | `spotify_get_show_episodes(limit=3)` | newest episode vs. days between the last two |
 
-For `via: metricool` / `windsor`: one lightweight read from that connector for the platform. If its
-tools aren't loaded, status ❌ "connector not enabled in Claude's settings".
+For `via: windsor`: one lightweight read from that connector. If its tools aren't loaded, status ❌
+"connector not enabled in Claude's settings". If `youtube_login_status` (no network) has a
+`warning` about Testing mode, show it as ⚠️ with the fix.
 
 3. Output only this table (brand's language), plus at most one line after it:
 

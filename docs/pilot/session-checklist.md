@@ -14,9 +14,9 @@ criterion 1). Start a stopwatch at "install". Intervene only after 5 minutes stu
 1. [ ] Install the plugin (Settings → Plugins). Time: ____
 2. [ ] New Cowork task, choose/create a folder, say **"Set up my brand"**. Time: ____
 3. [ ] Profile: role and goal recorded. Did the role options fit? ____
-4. [ ] Per platform: which path did they choose (own / Metricool / skip)? Time per platform; errors
+4. [ ] Per platform: connected or skipped? Time per platform; errors
        hit; which guide step. Fill the table in the log.
-5. [ ] Write-guard check (only if Metricool or a Meta/YouTube dev server is connected): ask
+5. [ ] Write-guard check (only if a third-party social connector is also connected): ask
        Claude to "post 'test' on Instagram". Expected: refused. Result: ____
 6. [ ] First report suggested by onboarding. Did it match their goal? Did they accept it? ____
 7. [ ] Report generated and saved to `reports/` + `data/`. Time: ____ **(stop the clock)**

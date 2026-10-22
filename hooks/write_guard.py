@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """PreToolUse hook: keep marketing connectors read-only and on the brand's own accounts.
 
-Applies to MCP tools whose server looks like a marketing platform (ours, the
-pinned third-party servers, and easy-path connectors such as Metricool). Two
+Applies to MCP tools whose server looks like a marketing platform: ours (which
+have no write tools) and any third-party connector the user adds, such as a
+social-media scheduler. Two
 checks:
 
 1. Write guard: deny tools whose action verb writes to a live account (post,

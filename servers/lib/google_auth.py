@@ -84,15 +84,30 @@ def service_account_token(info: dict, scope: str) -> str:
     return token
 
 
-def refresh_token_access(client_id: str, client_secret: str, refresh_token: str, token_uri: str = TOKEN_URI) -> str:
+def expired_signin(how_to_sign_in_again: str) -> ToolError:
+    return ToolError(
+        "The Google sign-in has expired or was revoked. The usual cause is a Google Cloud app still in "
+        "Testing mode, which ends every sign-in after 7 days. Fix it once: Google Cloud console → Google Auth "
+        "Platform → Audience → Publishing status → Publish app (\"In production\"; Google's verification is not "
+        "needed for the brand's own use). Then " + how_to_sign_in_again + ". Other causes: the password was "
+        "changed or access was removed at myaccount.google.com → Security → Third-party connections.")
+
+
+def refresh_token_access(client_id: str, client_secret: str, refresh_token: str, token_uri: str = TOKEN_URI,
+                         how_to_sign_in_again: str = "sign in again") -> str:
     key = (client_id, refresh_token[-12:])
     cached = _cache.get(key)
     if cached and time.time() < cached[1]:
         return cached[0]
-    data = request_json("POST", token_uri, service="Google sign-in", form={
-        "grant_type": "refresh_token", "client_id": client_id,
-        "client_secret": client_secret, "refresh_token": refresh_token,
-    })
+    try:
+        data = request_json("POST", token_uri, service="Google sign-in", form={
+            "grant_type": "refresh_token", "client_id": client_id,
+            "client_secret": client_secret, "refresh_token": refresh_token,
+        })
+    except ToolError as e:
+        if "invalid_grant" in str(e):
+            raise expired_signin(how_to_sign_in_again) from None
+        raise
     token = data["access_token"]
     _cache[key] = (token, time.time() + int(data.get("expires_in", 3600)) - 120)
     return token

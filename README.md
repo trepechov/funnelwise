@@ -30,9 +30,8 @@ account from `brand.yaml`. Credentials stay on your computer; nothing is sent to
 - **`openssl`** for the Google key (preinstalled on macOS and Linux).
 - Nothing else: no `uv`, Node, `git` or pip packages. PyYAML, Jinja2 and MarkupSafe are vendored.
 - Windows is not supported yet.
-- Some platforms need an account, not an install: YouTube, Instagram and Facebook go through the
-  Metricool connector (added in Claude's connector settings), and GA4, Search Console, Spotify and
-  TikTok need the brand's own credentials. See "How connecting works" below.
+- Every platform uses the brand's own credentials on Funnelwise's local servers: no third-party
+  data service in between. See "How connecting works" below.
 - Not yet tested on a completely clean machine; the pilot kit in `docs/pilot/` covers that check.
 
 ## Install
@@ -50,8 +49,9 @@ account from `brand.yaml`. Credentials stay on your computer; nothing is sent to
    want for the brand.
 3. Say **"Set up my brand"** (or run `/funnelwise:onboarding`). The setup asks for the brand name,
    language and your goal, then connects each platform one at a time, and you do every sign-in yourself:
-   Google key for GA4 + Search Console, YouTube sign-in, Metricool (or a Meta token) for Instagram
-   and Facebook, TikTok sign-in, and the Spotify app values. Each connection is tested live straight away.
+   Google key for GA4 + Search Console, YouTube sign-in, one Meta token for Instagram and Facebook,
+   TikTok sign-in, and the Spotify app values. Secrets go into files Funnelwise opens in your text
+   editor, never into the chat. Each connection is tested live straight away.
    Skip any platform and come back to it later with *"connect TikTok"*.
 4. Check everything at any time with *"check my connections"* (`connection-check`).
 
@@ -63,8 +63,8 @@ Plugins shows the update).
 | Platform | Easiest path | Limits to know |
 |---|---|---|
 | GA4 + Search Console | One Google service-account key (`reference/connector-guides/google.md`) | — |
-| YouTube | Metricool connector (sign-in) | Which Analytics metrics it exposes is still being verified |
-| Instagram, Facebook | Metricool connector (sign-in) | Metricool free plan: 30 days of history |
+| YouTube | Own Google sign-in client + one sign-in by the channel owner/manager (`youtube.md`) | Publish the Google app ("In production") or the sign-in ends after 7 days |
+| Instagram, Facebook | One Meta System User token, never expires (`meta.md`) | Instagram must be a Business/Creator account linked to the Page |
 | TikTok | Own TikTok app in Sandbox + one sign-in, no terminal | Display API: profile and per-video totals only |
 | Spotify | Own Spotify app (2 values) | No listener or stream numbers exist in any Spotify API |
 
@@ -78,8 +78,12 @@ Funnelwise – <Brand>/
 └── notes/         profile.md (your role and goal) and brand facts
 ```
 
-Credentials live in `~/.funnelwise/credentials/<brand>/` (mode 600), never in the brand folder, so
-sharing the folder never shares a key. Example: `templates/brand.example.yaml`; schema:
+Credentials live in the brand folder's hidden `.credentials/` (folder 700, files 600, git-ignored),
+or in `~/.funnelwise/credentials/<brand>/` when the brand folder is synced to a cloud drive (iCloud
+Desktop & Documents, Dropbox, Google Drive, OneDrive), so keys never leave the computer.
+`fw_prepare_credentials` writes each file with `<paste …>` placeholders for the user to fill in a
+text editor; `fw_connection_status` says which fields are still missing without showing values,
+and a hook stops Claude from opening, searching or editing credential files. Example: `templates/brand.example.yaml`; schema:
 `schemas/brand.schema.json`; a demo brand with fabricated data: `examples/demo-brand/`.
 
 ### Output contract
@@ -95,8 +99,8 @@ snapshot of the same topic (`fw_diff_snapshot`). KPI definitions: `reference/met
 |---|---|
 | `.claude-plugin/` | `plugin.json`, `marketplace.json` |
 | `.mcp.json` | The 5 own MCP servers |
-| `servers/` | `core.py` (brand folder, credentials, snapshots, reports, catalog), `ga4.py`, `search_console.py`, `spotify.py`, `tiktok.py`; `lib/` shared code; `_vendor/` PyYAML, Jinja2, MarkupSafe |
-| `hooks/` | `session_start.py` (brand scope summary), `write_guard.py` (read-only + scope guard) |
+| `servers/` | `core.py` (brand folder, credentials, snapshots, reports, catalog), `ga4.py`, `search_console.py`, `spotify.py`, `tiktok.py`, `youtube.py`, `instagram.py`, `facebook.py`; `lib/` shared code; `_vendor/` PyYAML, Jinja2, MarkupSafe |
+| `hooks/` | `session_start.py` (brand scope summary), `write_guard.py` (read-only + scope guard), `secret_guard.py` (keeps Claude out of credential files) |
 | `skills/` | The six skills |
 | `reference/` | `metrics.yaml`, `skill-catalog.yaml`, `sources.md`, `connector-guides/`, `connector-gotchas.md`, `report-templates/` |
 | `docs/spikes/` | Phase 0 findings; `docs/pilot/` the pilot kit |

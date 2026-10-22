@@ -13,8 +13,10 @@ them from there and give them to Claude as numbers (recorded as `manual`).
 1. <https://developer.spotify.com/dashboard> → **Create app**. Any name and description. Redirect
    URI: `http://127.0.0.1:8888/callback` (required by the form, never used). Tick **Web API** →
    **Save**.
-2. App → **Settings**: copy **Client ID** and **Client secret** and give them to Claude
-   (`fw_save_credential(kind="spotify", …)`).
+2. App → **Settings**: **Client ID** and **Client secret**. Claude runs
+   `fw_prepare_credentials spotify`, which creates `spotify.json` in the brand's private credentials
+   folder and opens it in your text editor. Replace the two `<paste …>` values (keep the quotes)
+   and save. They never pass through the chat.
 3. The show ID is the last part of the show's link: `open.spotify.com/show/<show id>`. Claude saves
    it with `fw_set_connector spotify own <show id>`.
 

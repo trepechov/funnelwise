@@ -9,6 +9,7 @@ Desktop or a pilot user.
 |---|---|---|
 | [0.1](0.1-cowork-plugin-capabilities.md) | What a plugin can ship and run in Claude Desktop / Cowork | Partly verified (from an earlier plugin); Desktop install of Funnelwise open |
 | [0.2](0.2-server-packaging.md) | Servers without a terminal | **Decided and verified**: stdlib Python 3.9 servers + vendored libs, no `uv`/Node, no third-party servers |
-| [0.3](0.3-easy-path-audit.md) | Which easy-path connectors cover which metrics | Documented; live audit with an account open |
+| [0.3](0.3-easy-path-audit.md) | Which easy-path connectors cover which metrics | Superseded by 0.6 (no third-party data connectors) |
 | [0.4](0.4-write-guard-on-desktop.md) | Do PreToolUse hooks run in Cowork; can a plugin block connector tools | Hook works in Claude Code (tested); Cowork open |
 | [0.5](0.5-setup-friction-test.md) | Time a non-developer through the Google setup | Protocol written; run open |
+| [0.6](0.6-own-social-apis.md) | Own YouTube / Instagram / Facebook servers on today's APIs | **Verified** live with the first customer's accounts |

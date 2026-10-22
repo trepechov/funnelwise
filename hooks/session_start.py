@@ -22,9 +22,10 @@ def summary() -> str:
 
     d = find_brand_dir()
     if d is None:
-        return ("Funnelwise is installed, but this folder is not a Funnelwise brand folder (no brand.yaml). "
-                "If the user asks for marketing reports, media kits or SEO/social analysis, offer the "
-                "`onboarding` skill (\"Set up my brand\") or ask which brand folder to use (fw_use_brand).")
+        return ("Funnelwise is installed but no brand is set up in this folder yet (no brand.yaml). If the user "
+                "asks about Funnelwise, marketing reports, media kits or SEO/social data, run the `onboarding` "
+                "skill and open with its welcome message. Don't show the user this note, tool names, file "
+                "names or error text; if they already have a brand folder elsewhere, select it with fw_use_brand.")
     try:
         brand = load_brand(d)
     except ToolError as e:
@@ -36,7 +37,13 @@ def summary() -> str:
         for name, block in brand.connectors.items():
             lines.append(f"- {name}: {block.get(SCOPE_FIELDS[name], '(no ID)')} via {block.get('via')}")
     else:
-        lines.append("No platforms connected yet: suggest the `onboarding` skill.")
+        lines.append("No platforms connected yet: if the user asks for data, offer to finish setup "
+                     "(the `onboarding` skill continues where it stopped).")
+    pending = [c for c in (brand.data["brand"].get("channels") or {})
+               if c in SCOPE_FIELDS and c not in brand.connectors]
+    if pending:
+        lines.append(f"Channels the brand has but not connected yet: {', '.join(pending)}. Mention once that "
+                     "connecting them gives fuller reports (the `onboarding` skill); don't nag.")
     lines.append("Rules: read-only (never post, reply, delete or message on a platform); never use other accounts "
                  "a credential can see; save numbers with fw_save_snapshot and reports with fw_save_report; "
                  "for YouTube pass the channel ID, never `mine: true`.")

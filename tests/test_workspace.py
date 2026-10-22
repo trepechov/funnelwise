@@ -10,7 +10,7 @@ import yaml
 
 from conftest import DEMO_BRAND, ROOT
 from lib.mcp_stdio import ToolError
-from lib.workspace import find_brand_dir, load_brand, set_active_brand, slugify, validate_brand
+from lib.workspace import find_brand_dir, load_brand, set_active_brand, slugify, synced_location, validate_brand
 
 SCHEMA = json.loads((ROOT / "schemas" / "brand.schema.json").read_text())
 
@@ -33,8 +33,11 @@ VALID = [
     DEMO_BRAND,
     {"brand": {"name": "Solo", "language": "bg"}},
     {"brand": {"name": "Solo", "language": "pt-BR"}, "connectors": {}, "competitors": [], "sponsorship": {}},
-    {"brand": {"name": "X", "language": "en"}, "connectors": {"instagram": {"via": "metricool"}}},
+    {"brand": {"name": "X", "language": "en"}, "connectors": {"instagram": {"via": "windsor"}}},
+    {"brand": {"name": "X", "language": "en"}, "connectors": {"youtube": {"via": "own", "channel_id": "UC1"},
+                                                            "facebook": {"via": "own", "page_id": "1"}}},
     {"brand": {"name": "X", "language": "en"}, "connectors": {"gsc": {"via": "own", "site_url": "sc-domain:x.com"}}},
+    {"brand": {"name": "X", "language": "en", "channels": {"youtube": "@x", "linkedin": "https://linkedin.com/company/x"}}},
     yaml.safe_load((ROOT / "templates" / "brand.example.yaml").read_text()),
     yaml.safe_load((ROOT / "examples" / "demo-brand" / "brand.yaml").read_text()),
 ]
@@ -50,10 +53,14 @@ INVALID = [
     ("website without scheme", mutate(brand__website="acme.example")),
     ("unknown top key", {**DEMO_BRAND, "extra": 1}),
     ("unknown brand key", mutate(brand__tagline="hi")),
+    ("unknown channel", mutate(brand__channels={"myspace": "x"})),
+    ("blank channel", mutate(brand__channels={"youtube": " "})),
+    ("channels not mapping", mutate(brand__channels=["youtube"])),
     ("unknown connector", mutate(connectors__linkedin={"via": "own"})),
     ("bad via", mutate(connectors__ga4={"via": "magic", "property_id": "1"})),
-    ("own for youtube", mutate(connectors__youtube={"via": "own", "channel_id": "UC1"})),
-    ("own for facebook", mutate(connectors__facebook={"via": "own", "page_id": "1"})),
+    ("metricool removed", mutate(connectors__youtube={"via": "metricool", "channel_id": "UC1"})),
+    ("own youtube without id", mutate(connectors__youtube={"via": "own"})),
+    ("own instagram without username", mutate(connectors__instagram={"via": "own"})),
     ("own without id", mutate(connectors__ga4={"via": "own"})),
     ("own with empty id", mutate(connectors__spotify={"via": "own", "show_id": ""})),
     ("gsc url form", mutate(connectors__gsc={"via": "own", "site_url": "www.acme.example"})),
@@ -125,11 +132,27 @@ def test_brand_accessors_and_credentials_dir(brand_dir, tmp_path, monkeypatch):
     assert b.competitor_ids("youtube") == ["UCtrail00000000000000000"]
     with pytest.raises(ToolError, match="not connected"):
         b.connector("semrush")
-    assert b.credentials_dir() == brand_dir / ".credentials"  # dev path: folder exists
+    assert b.credentials_dir() == brand_dir / ".credentials"  # folder exists
     (brand_dir / ".credentials").rmdir()
-    assert b.credentials_dir() == tmp_path / "fwhome" / "credentials" / "acme"  # default: outside the folder
+    assert b.credentials_dir() == brand_dir / ".credentials"  # default: hidden folder in an unsynced brand folder
+    home = tmp_path / "fwhome" / "credentials" / "acme"
+    home.mkdir(parents=True)
+    assert b.credentials_dir() == home  # existing per-user folder still wins
     monkeypatch.setenv("FUNNELWISE_CREDENTIALS_DIR", str(tmp_path / "c"))
     assert b.credentials_dir() == tmp_path / "c"
+
+
+def test_synced_brand_folder_keeps_credentials_local(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    home = tmp_path / "home"
+    (home / "Library" / "Mobile Documents" / "com~apple~CloudDocs" / "Desktop").mkdir(parents=True)
+    desk = _write(home / "Desktop" / "Acme")
+    assert synced_location(desk) == "iCloud Drive (Desktop sync)"
+    assert synced_location(home / "Library" / "CloudStorage" / "Dropbox" / "x") == "a cloud drive"
+    assert synced_location(tmp_path / "Dropbox" / "Acme") == "Dropbox"
+    assert synced_location(home / "Projects" / "Acme") is None
+    monkeypatch.setenv("FUNNELWISE_BRAND_DIR", str(desk))
+    assert load_brand().credentials_dir() == tmp_path / "fwhome" / "credentials" / "acme"
 
 
 def test_slugify():

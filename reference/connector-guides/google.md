@@ -47,6 +47,4 @@ No browser sign-in, no weekly re-login. About 15 minutes, once.
 | "private key looks invalid" | Wrong file imported (e.g. an OAuth client file) | Re-download the service-account key (step 4) |
 | GA4 numbers look inflated, strange countries | Bot traffic | Check engagement rate by country before quoting to sponsors |
 
-Other ways to connect: Windsor.ai's connector (`via: windsor`, a sign-in, free for one source) or
-Google's official GA4 MCP server (`via: google-ga4-mcp`, needs the `gcloud` command line). See
-`docs/spikes/0.3-easy-path-audit.md`.
+The same Google Cloud project also holds the YouTube sign-in client (`youtube.md`).

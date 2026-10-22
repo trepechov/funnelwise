@@ -13,8 +13,12 @@ Lookup order for the brand folder:
 
 Credentials never live in brand.yaml. Lookup order for the credentials folder:
   1. $FUNNELWISE_CREDENTIALS_DIR
-  2. <brand folder>/.credentials/ if it exists (developer path)
-  3. ~/.funnelwise/credentials/<brand slug>/ (default, outside any shared folder)
+  2. <brand folder>/.credentials/ if it exists
+  3. ~/.funnelwise/credentials/<brand slug>/ if it exists
+  4. new brands: <brand folder>/.credentials/ (hidden, git-ignored), unless the
+     brand folder is synced to a cloud (iCloud, Dropbox, Google Drive,
+     OneDrive): then ~/.funnelwise/credentials/<brand slug>/, so keys never
+     leave this computer.
 """
 from __future__ import annotations
 
@@ -27,7 +31,7 @@ from lib.mcp_stdio import ToolError
 
 BRAND_FILE = "brand.yaml"
 CONNECTORS = ("ga4", "gsc", "youtube", "instagram", "facebook", "tiktok", "spotify", "semrush")
-VIA_OPTIONS = ("own", "metricool", "windsor", "google-ga4-mcp", "semrush", "manual")
+VIA_OPTIONS = ("own", "windsor", "google-ga4-mcp", "semrush", "manual")
 # The ID each connector is scoped to. Required when via == "own" (our servers
 # enforce it); recommended otherwise so skills know which account is the brand's.
 SCOPE_FIELDS = {
@@ -40,14 +44,15 @@ SCOPE_FIELDS = {
     "spotify": "show_id",
     "semrush": "domain",
 }
-# No Funnelwise server for these: connect them through Metricool, Windsor or manual exports.
-NO_OWN = ("youtube", "instagram", "facebook")
 OPTIONAL_FIELDS = {
     "youtube": ("handle",),
     "instagram": ("business_account_id",),
     "semrush": ("database",),
 }
 COMPETITOR_KEYS = {"name", "website", "youtube", "tiktok", "instagram", "spotify"}
+# brand.channels: the public links of every channel the brand has, captured at onboarding
+# whether or not the platform is connected yet. linkedin and x have no connector.
+CHANNEL_KEYS = ("youtube", "instagram", "facebook", "tiktok", "spotify", "linkedin", "x")
 
 
 def funnelwise_home() -> Path:
@@ -89,6 +94,29 @@ def set_active_brand(brand_dir: Path) -> None:
     home = funnelwise_home()
     home.mkdir(parents=True, exist_ok=True)
     _active_brand_file().write_text(str(Path(brand_dir).expanduser().resolve()) + "\n", encoding="utf-8")
+
+
+_SYNCED_PARTS = ("dropbox", "google drive", "googledrive", "my drive", "onedrive", "box", "pcloud drive", "icloud drive")
+
+
+def synced_location(path: Path) -> Optional[str]:
+    """The cloud service that syncs `path`, or None. Secrets must not be stored in such a folder."""
+    p = Path(path).expanduser().resolve()
+    home = Path.home().resolve()
+    for root, name in ((home / "Library" / "CloudStorage", "a cloud drive"),
+                       (home / "Library" / "Mobile Documents", "iCloud Drive")):
+        if root in p.parents or p == root:
+            return name
+    for part in p.parts:
+        low = part.lower()
+        if low in _SYNCED_PARTS or low.startswith(("onedrive", "dropbox")):
+            return part
+    # macOS "Desktop & Documents Folders" in iCloud keeps the usual paths but syncs them.
+    icloud = home / "Library" / "Mobile Documents" / "com~apple~CloudDocs"
+    for folder in ("Desktop", "Documents"):
+        if (icloud / folder).is_dir() and (home / folder) in [p, *p.parents]:
+            return f"iCloud Drive ({folder} sync)"
+    return None
 
 
 def slugify(text: str) -> str:
@@ -133,7 +161,16 @@ def validate_brand(data: object) -> List[str]:
             for k, v in colors.items():
                 if k not in ("primary", "accent") or not isinstance(v, str) or not _HEX.match(v):
                     errors.append(f"brand.colors.{k} must be `primary`/`accent` with a #RRGGBB value")
-        unknown = set(brand) - {"name", "short", "website", "language", "colors", "logo"}
+        channels = brand.get("channels", {})
+        if not isinstance(channels, dict):
+            errors.append("brand.channels must be a mapping like {youtube: https://youtube.com/@acme}")
+        else:
+            for k, v in channels.items():
+                if k not in CHANNEL_KEYS:
+                    errors.append(f"unknown channel brand.channels.{k} (known: {', '.join(CHANNEL_KEYS)})")
+                elif not isinstance(v, str) or not v.strip():
+                    errors.append(f"brand.channels.{k} must be the channel's link or handle")
+        unknown = set(brand) - {"name", "short", "website", "language", "colors", "logo", "channels"}
         errors += [f"unknown key brand.{k}" for k in sorted(unknown)]
 
     connectors = data.get("connectors", {}) or {}
@@ -150,8 +187,6 @@ def validate_brand(data: object) -> List[str]:
         via = block.get("via")
         if via not in VIA_OPTIONS:
             errors.append(f"connectors.{name}.via must be one of {', '.join(VIA_OPTIONS)}")
-        if via == "own" and name in NO_OWN:
-            errors.append(f"connectors.{name}.via `own` is not available: Funnelwise has no {name} server (use metricool, windsor or manual)")
         field = SCOPE_FIELDS[name]
         value = block.get(field)
         if via == "own" and (value is None or str(value).strip() == ""):
@@ -248,9 +283,12 @@ class Brand:
         if env:
             return Path(env).expanduser()
         local = self.dir / ".credentials"
+        home = funnelwise_home() / "credentials" / self.slug
         if local.is_dir():
             return local
-        return funnelwise_home() / "credentials" / self.slug
+        if home.is_dir() or synced_location(self.dir):
+            return home
+        return local
 
     def credential(self, filename: str) -> Path:
         return self.credentials_dir() / filename

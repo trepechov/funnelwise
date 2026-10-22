@@ -4,9 +4,9 @@ Skills depend on **metrics** (`reference/metrics.yaml`), not on tool names. This
 metric to the tool that provides it for every connection path in `brand.yaml` `via:`.
 
 - **own** = Funnelwise's local servers. Tool names are exact and tested.
-- **metricool / windsor** = easy-path connectors added in Claude's connector settings. Their tool
-  names and coverage are **not verified yet** (spike 0.3, `docs/spikes/0.3-easy-path-audit.md`):
-  find the matching tool by name, and if a metric isn't offered, report it as not available.
+- **windsor** = Windsor.ai's connector added in Claude's connector settings. Its tool names and
+  coverage are **not verified**: find the matching tool by name, and if a metric isn't offered,
+  report it as not available.
 - **manual** = the user supplies a CSV/XLSX export or types the number; record it with source `manual`.
 
 Tool names appear in Claude as `mcp__…__<tool>`; only the last part is listed here.
@@ -35,13 +35,36 @@ Other paths: `google-ga4-mcp` (Google's official server; needs gcloud sign-in) �
 
 Other paths: `windsor` → its Search Console source (verify).
 
-## YouTube, Instagram, Facebook (`via: metricool` / `windsor` / `manual`)
+## YouTube (`via: own` → server `youtube`)
 
-Funnelwise has no server of its own for these. Read them through the connector the brand chose;
-the metric ids in `metrics.yaml` stay the same. Which Metricool tools and fields cover each metric
-is still being verified (`docs/spikes/0.3-easy-path-audit.md`); list the metrics a connector can't
-answer as not available. Pass the brand's `channel_id` / `username` / `page_id` and never the
-connector's "mine" default.
+| Metric | Tool call |
+|---|---|
+| `youtube.subscribers` | `youtube_channel()` → `subscribers` (rounded by YouTube) |
+| `youtube.views`, `youtube.watch_time_hours`, `youtube.avg_view_duration` | `youtube_analytics(date_from, date_to)` → `views`, `estimatedMinutesWatched` / 60, `averageViewDuration` |
+| `youtube.avg_views_per_video_30d`, `youtube.engagement_rate`, `youtube.shorts_share` | `youtube_list_videos(max_results=50)` → videos published in the window; `format` short/long/live |
+| Traffic sources, countries, age/gender, devices (extra) | `youtube_analytics(..., dimensions="insightTrafficSourceType" / "country" / "ageGroup,gender" / "deviceType")` |
+| Retention of one video (extra) | `youtube_analytics(..., metrics=[averageViewPercentage, averageViewDuration], filters="video==<id>")` |
+
+Analytics needs the owner/manager sign-in; public numbers work for listed competitor channels too.
+
+## Instagram (`via: own` → server `instagram`)
+
+| Metric | Tool call |
+|---|---|
+| `instagram.followers` | `instagram_profile()` → `followers_count` |
+| `instagram.reach`, `instagram.profile_views`, `instagram.website_clicks` | `instagram_account_insights(date_from, date_to)` (≤ 30 days) → `totals` |
+| `instagram.engagement_rate` | `instagram_list_media` + `instagram_media_insights(ids)` → `total_interactions / reach` per post |
+| Audience (extra) | `instagram_audience("country" / "city" / "age" / "gender")` |
+
+Instagram counts `views`, not impressions (Meta retired impressions in 2025).
+
+## Facebook (`via: own` → server `facebook`)
+
+| Metric | Tool call |
+|---|---|
+| `facebook.fans` | `facebook_page()` → `followers_count` |
+| `facebook.impressions` | `facebook_page_insights(date_from, date_to)` → `totals.page_media_view` (views; Meta retired impressions) |
+| `facebook.engagement_rate` | `facebook_list_posts` (reactions, comments, shares) + `facebook_get_post_insights(ids)` → `post_media_view` |
 
 ## TikTok (`via: own` → server `tiktok`, official Display API)
 
@@ -51,7 +74,6 @@ connector's "mine" default.
 | `tiktok.avg_views_per_video`, `tiktok.engagement_rate` | `tiktok_list_videos(max_count=20)` (page with `cursor`) |
 
 No views-by-day, audience or traffic-source data exists in the Display API.
-Other paths: `metricool` → TikTok stats (verify; may include more than the Display API).
 
 ## Spotify (`via: own` → server `spotify`)
 

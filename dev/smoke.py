@@ -25,6 +25,9 @@ LIVE_CALLS = {
     "search-console": ("gsc_site", {}),
     "spotify": ("spotify_get_show", {}),
     "tiktok": ("tiktok_get_profile", {}),
+    "youtube": ("youtube_channel", {}),
+    "instagram": ("instagram_profile", {}),
+    "facebook": ("facebook_page", {}),
 }
 
 
