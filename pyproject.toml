@@ -1,0 +1,13 @@
+# Development only. The plugin itself needs no install: servers run on the
+# system python3 (3.9+) with vendored dependencies (see servers/_vendor/).
+[project]
+name = "funnelwise"
+version = "0.1.0"
+requires-python = ">=3.9"
+
+[dependency-groups]
+dev = ["pytest>=8", "jsonschema>=4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["servers", "servers/_vendor", "hooks"]

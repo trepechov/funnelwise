@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+uv.lock
+dist/
+.DS_Store
+# Never commit brand data or credentials into the product repo
+.credentials/
+brand.yaml
+!templates/**
+!examples/**
+!tests/fixtures/**
+# Private project notes (customer facts); never commit
+memory/

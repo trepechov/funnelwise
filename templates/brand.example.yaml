@@ -1,0 +1,37 @@
+# Funnelwise brand settings: one file per brand folder.
+# The onboarding skill writes this for you; you can also copy and edit it.
+# Never put passwords, tokens or keys here: they live in the private
+# credentials folder (~/.funnelwise/credentials/<brand>/).
+
+brand:
+  name: "Acme Outdoor"
+  short: "Acme"                     # used in file names and brand-query detection
+  website: "https://www.acme-outdoor.example"
+  language: "en"                    # every report is written in this language
+  colors: { primary: "#1F6F5C", accent: "#F2A541" }
+  # logo: "notes/logo.png"          # optional, relative to this folder
+
+# One block per connected platform. Leave a platform out = not connected;
+# reports then say "data not available" for it instead of failing.
+#   via: own        Funnelwise's local server with your own credentials
+#        metricool  the Metricool connector (sign-in, no developer app)
+#        windsor    the Windsor.ai connector
+#        manual     numbers you add from exports
+# The ID after `via` is the ONE account this brand uses; Funnelwise refuses others.
+connectors:
+  ga4:       { via: own, property_id: "123456789" }                 # Admin > Property details
+  gsc:       { via: own, site_url: "https://www.acme-outdoor.example/" }   # or sc-domain:acme-outdoor.example
+  youtube:   { via: own, channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", handle: "@acmeoutdoor" }
+  instagram: { via: metricool, username: "acmeoutdoor" }
+  facebook:  { via: metricool, page_id: "100000000000000" }
+  tiktok:    { via: own, username: "acmeoutdoor" }
+  spotify:   { via: own, show_id: "0000000000000000000000" }       # from the show's open.spotify.com link
+  # semrush: { via: semrush, domain: "acme-outdoor.example", database: "us" }
+
+# Competitors: used for comparisons, and the only other accounts research tools may look up.
+competitors:
+  - { name: "Trailhead Gear", website: "https://trailhead.example", youtube: "UCyyyyyyyyyyyyyyyyyyyyyy", tiktok: "trailheadgear" }
+
+sponsorship:
+  past_sponsors: ["Northwind Bikes"]
+  rate_card_currency: "EUR"

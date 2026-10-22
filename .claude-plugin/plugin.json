@@ -1,0 +1,23 @@
+{
+  "name": "funnelwise",
+  "displayName": "Funnelwise",
+  "version": "0.1.0",
+  "description": "Local marketing analytics for your brand's website and social channels (GA4, Search Console, YouTube, Instagram, Facebook, TikTok, Spotify). Read-only connectors scoped to your own accounts, a brand folder with dated reports and data snapshots, and ready-made skills: media kits, SEO opportunities, content performance. Runs on your computer; nothing is sent to us.",
+  "author": {
+    "name": "Dimitar Trepechov"
+  },
+  "homepage": "https://github.com/trepechov/funnelwise",
+  "repository": "https://github.com/trepechov/funnelwise",
+  "license": "UNLICENSED",
+  "keywords": [
+    "marketing",
+    "analytics",
+    "media-kit",
+    "seo",
+    "youtube",
+    "instagram",
+    "tiktok",
+    "ga4",
+    "search-console"
+  ]
+}

@@ -1,0 +1,376 @@
+# Funnelwise metrics dictionary: the single source of KPI definitions.
+#
+# Every skill declares the metric ids it needs (reference/skill-catalog.yaml),
+# every data snapshot (data/<topic>-<YYYY-MM>.json) stores values under these
+# ids, and reference/sources.md maps each id to the tool that provides it.
+#
+# Fields
+#   name              short label used in reports
+#   platform          ga4 | gsc | youtube | instagram | facebook | tiktok | spotify | cross
+#   stage             Awareness | Engagement | Traffic | Conversion | Loyalty
+#   unit              count | ratio (0-1) | seconds | hours | position | days | money
+#   higher_is_better  drives the good/bad arrow in snapshot diffs
+#   formula           how the value is computed from raw API fields
+#   caveats           platform quirks a report must mention when it uses the metric
+#   benchmark         external benchmark range, ONLY with a citable source. null =
+#                     none adopted yet; reports then compare with the brand's own
+#                     history or channel median instead of an outside number.
+version: 1
+metrics:
+  # ── Website: Google Analytics 4 ──────────────────────────────────────────
+  ga4.active_users:
+    name: Active users
+    platform: ga4
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: GA4 Data API metric `activeUsers` for the period
+    caveats: [Bot traffic can inflate it; check country/engagement before quoting it to sponsors.]
+    benchmark: null
+  ga4.sessions:
+    name: Sessions
+    platform: ga4
+    stage: Traffic
+    unit: count
+    higher_is_better: true
+    formula: GA4 metric `sessions`
+    caveats: []
+    benchmark: null
+  ga4.engagement_rate:
+    name: Engagement rate (site)
+    platform: ga4
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: GA4 metric `engagementRate` (engaged sessions / sessions)
+    caveats: [An engaged session lasts >10 s, has a key event or 2+ page views. Not comparable to social engagement rates.]
+    benchmark: null
+  ga4.avg_engagement_time:
+    name: Average engagement time per user
+    platform: ga4
+    stage: Engagement
+    unit: seconds
+    higher_is_better: true
+    formula: GA4 `userEngagementDuration` / `activeUsers`
+    caveats: []
+    benchmark: null
+  ga4.key_events:
+    name: Key events
+    platform: ga4
+    stage: Conversion
+    unit: count
+    higher_is_better: true
+    formula: GA4 metric `keyEvents` (formerly conversions)
+    caveats: [Only meaningful if the property has key events configured.]
+    benchmark: null
+  ga4.organic_search_sessions:
+    name: Organic search sessions
+    platform: ga4
+    stage: Traffic
+    unit: count
+    higher_is_better: true
+    formula: GA4 `sessions` where `sessionDefaultChannelGroup` = "Organic Search"
+    caveats: []
+    benchmark: null
+  ga4.social_sessions:
+    name: Social sessions
+    platform: ga4
+    stage: Traffic
+    unit: count
+    higher_is_better: true
+    formula: GA4 `sessions` where `sessionDefaultChannelGroup` in ("Organic Social", "Paid Social")
+    caveats: [Links from apps often arrive as Direct; UTM-tag links in bios and descriptions.]
+    benchmark: null
+  ga4.returning_users_share:
+    name: Returning users share
+    platform: ga4
+    stage: Loyalty
+    unit: ratio
+    higher_is_better: true
+    formula: GA4 `activeUsers` where `newVsReturning` = "returning" / all `activeUsers`
+    caveats: [Cookie consent and Safari ITP undercount returning users.]
+    benchmark: null
+
+  # ── Website: Google Search Console ───────────────────────────────────────
+  gsc.clicks:
+    name: Search clicks
+    platform: gsc
+    stage: Traffic
+    unit: count
+    higher_is_better: true
+    formula: Search Analytics `clicks` for the property and period
+    caveats: [Data is final after ~3 days; avoid the last 2–3 days in comparisons.]
+    benchmark: null
+  gsc.impressions:
+    name: Search impressions
+    platform: gsc
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Search Analytics `impressions`
+    caveats: []
+    benchmark: null
+  gsc.ctr:
+    name: Search CTR
+    platform: gsc
+    stage: Traffic
+    unit: ratio
+    higher_is_better: true
+    formula: clicks / impressions
+    caveats: [Depends heavily on position and brand-query share; compare against position-expected CTR, not across sites.]
+    benchmark: null
+  gsc.avg_position:
+    name: Average position
+    platform: gsc
+    stage: Awareness
+    unit: position
+    higher_is_better: false
+    formula: Search Analytics impression-weighted `position`
+    caveats: [Can worsen while traffic grows, when the site starts ranking for many new long-tail queries.]
+    benchmark: null
+  gsc.striking_distance_queries:
+    name: Striking-distance queries
+    platform: gsc
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Queries with average position 4–20 and at least the minimum impressions threshold used by gsc_opportunities
+    caveats: [An opportunity count, not a performance number.]
+    benchmark: null
+  gsc.non_brand_click_share:
+    name: Non-brand click share
+    platform: gsc
+    stage: Awareness
+    unit: ratio
+    higher_is_better: true
+    formula: Clicks from queries not containing the brand name / all clicks
+    caveats: [Brand detection is a name match; misspellings count as non-brand.]
+    benchmark: null
+
+  # ── YouTube ──────────────────────────────────────────────────────────────
+  youtube.subscribers:
+    name: YouTube subscribers
+    platform: youtube
+    stage: Loyalty
+    unit: count
+    higher_is_better: true
+    formula: Data API `channels.statistics.subscriberCount`
+    caveats: [Public counts are rounded to 3 significant figures above 1,000.]
+    benchmark: null
+  youtube.views:
+    name: YouTube views
+    platform: youtube
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Analytics API `views` for the period (lifetime from Data API if Analytics is not authorized)
+    caveats: [Period views need YouTube Analytics access by the channel owner/manager.]
+    benchmark: null
+  youtube.watch_time_hours:
+    name: Watch time (hours)
+    platform: youtube
+    stage: Engagement
+    unit: hours
+    higher_is_better: true
+    formula: Analytics API `estimatedMinutesWatched` / 60
+    caveats: [Needs YouTube Analytics access.]
+    benchmark: null
+  youtube.avg_view_duration:
+    name: Average view duration
+    platform: youtube
+    stage: Engagement
+    unit: seconds
+    higher_is_better: true
+    formula: Analytics API `averageViewDuration`
+    caveats: [Shorts and long-form differ by an order of magnitude; report them separately.]
+    benchmark: null
+  youtube.avg_views_per_video_30d:
+    name: Average views per video (first 30 days)
+    platform: youtube
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Mean views of long-form videos published 30–120 days ago (public Data API counts)
+    caveats: [Older videos keep growing; compare only videos of similar age. Exclude Shorts and live streams.]
+    benchmark: null
+  youtube.engagement_rate:
+    name: YouTube engagement rate
+    platform: youtube
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: (likes + comments) / views, over the videos in the sample
+    caveats: [Public like counts only; dislikes are not available.]
+    benchmark: null
+  youtube.shorts_share:
+    name: Shorts share of uploads
+    platform: youtube
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: Shorts uploaded / all uploads in the period
+    caveats: [Describes the content mix; neither higher nor lower is good by itself (higher_is_better only sets the diff arrow).]
+    benchmark: null
+
+  # ── Instagram ────────────────────────────────────────────────────────────
+  instagram.followers:
+    name: Instagram followers
+    platform: instagram
+    stage: Loyalty
+    unit: count
+    higher_is_better: true
+    formula: Graph API `followers_count`
+    caveats: []
+    benchmark: null
+  instagram.reach:
+    name: Instagram reach
+    platform: instagram
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Account insights `reach` summed by day for the period
+    caveats: [Summed daily reach double-counts people who saw content on several days.]
+    benchmark: null
+  instagram.engagement_rate:
+    name: Instagram engagement rate (per reach)
+    platform: instagram
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: (likes + comments + saves + shares) / reach, per post, averaged over posts in the period
+    caveats: [Per reach, not per follower. Say which one when comparing with other creators.]
+    benchmark: null
+  instagram.profile_views:
+    name: Instagram profile views
+    platform: instagram
+    stage: Engagement
+    unit: count
+    higher_is_better: true
+    formula: Account insights `profile_views`
+    caveats: []
+    benchmark: null
+  instagram.website_clicks:
+    name: Instagram website clicks
+    platform: instagram
+    stage: Traffic
+    unit: count
+    higher_is_better: true
+    formula: Account insights `website_clicks`
+    caveats: []
+    benchmark: null
+
+  # ── Facebook ─────────────────────────────────────────────────────────────
+  facebook.fans:
+    name: Facebook Page followers
+    platform: facebook
+    stage: Loyalty
+    unit: count
+    higher_is_better: true
+    formula: Page `fan_count` (or `followers_count` on New Pages Experience)
+    caveats: []
+    benchmark: null
+  facebook.impressions:
+    name: Facebook impressions
+    platform: facebook
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Page/post insights impressions for the period
+    caveats: [Post-level insights need a Page access token, not a User token.]
+    benchmark: null
+  facebook.engagement_rate:
+    name: Facebook engagement rate (per impressions)
+    platform: facebook
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: (reactions + comments + shares) / impressions, per post, averaged
+    caveats: [Per impressions, unlike Instagram (per reach).]
+    benchmark: null
+
+  # ── TikTok (official Display API) ───────────────────────────────────────
+  tiktok.followers:
+    name: TikTok followers
+    platform: tiktok
+    stage: Loyalty
+    unit: count
+    higher_is_better: true
+    formula: Display API `user.info.stats` `follower_count`
+    caveats: []
+    benchmark: null
+  tiktok.total_likes:
+    name: TikTok total likes
+    platform: tiktok
+    stage: Engagement
+    unit: count
+    higher_is_better: true
+    formula: Display API `likes_count` (lifetime)
+    caveats: [Lifetime only; the Display API has no period analytics.]
+    benchmark: null
+  tiktok.avg_views_per_video:
+    name: TikTok average views per video
+    platform: tiktok
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Mean `view_count` of the most recent N videos (N stated in the report)
+    caveats: [Display API gives current totals per video, not views by day.]
+    benchmark: null
+  tiktok.engagement_rate:
+    name: TikTok engagement rate (per view)
+    platform: tiktok
+    stage: Engagement
+    unit: ratio
+    higher_is_better: true
+    formula: (likes + comments + shares) / views over the sampled videos
+    caveats: []
+    benchmark: null
+
+  # ── Spotify (public catalog only) ───────────────────────────────────────
+  spotify.episode_count:
+    name: Podcast episodes
+    platform: spotify
+    stage: Loyalty
+    unit: count
+    higher_is_better: true
+    formula: Web API show `total_episodes`
+    caveats: [The Spotify Web API has no listener or stream numbers at any access level; those live only in Spotify for Creators.]
+    benchmark: null
+  spotify.release_cadence_days:
+    name: Days between episodes
+    platform: spotify
+    stage: Loyalty
+    unit: days
+    higher_is_better: false
+    formula: Median days between the release dates of the last 10 episodes
+    caveats: []
+    benchmark: null
+
+  # ── Cross-platform ───────────────────────────────────────────────────────
+  cross.total_followers:
+    name: Total followers across platforms
+    platform: cross
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: Sum of youtube.subscribers, instagram.followers, facebook.fans, tiktok.followers that are available
+    caveats: [People who follow on several platforms are counted more than once. Always list the platforms included.]
+    benchmark: null
+  cross.monthly_reach:
+    name: Monthly reach (estimate)
+    platform: cross
+    stage: Awareness
+    unit: count
+    higher_is_better: true
+    formula: youtube.views + instagram.reach + facebook.impressions + TikTok views of videos published in the month + ga4.active_users
+    caveats: [Mixes views, reach and impressions; an order-of-magnitude figure for media kits, not an audited number.]
+    benchmark: null
+  cross.est_cpm_value:
+    name: Estimated sponsorship value per 1,000 views
+    platform: cross
+    stage: Conversion
+    unit: money
+    higher_is_better: true
+    formula: Rate-card price / (expected views / 1,000), currency from brand.yaml sponsorship.rate_card_currency
+    caveats: [Only when the brand supplies a rate card or a past deal; never invent market CPMs.]
+    benchmark: null

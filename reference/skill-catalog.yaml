@@ -1,0 +1,201 @@
+# Skill catalog: the single source for onboarding suggestions, the `start`
+# skill and the "next steps" footer of every report (plan §4.2).
+#
+#   status        available (ships in this version) | planned (catalog only)
+#   use_case      plan §4.1 use-case family
+#   roles         roles this skill is suggested to (ids from `roles:` below)
+#   example_goals goals in users' words that point at this skill
+#   needs         connectors; `any_of` = at least one of them must be connected
+#   metrics       metrics.yaml ids the skill reports on
+#   next          skills to suggest after this one, with a one-line reason
+version: 1
+
+roles:
+  marketing-manager:
+    label: Marketing manager
+    first: kpi-scorecard
+    then: [campaign-planner, social-improvement-plan, campaign-report]
+  social-media-manager:
+    label: Social media / content manager
+    first: content-performance
+    then: [social-improvement-plan, content-ideas]
+  seo-specialist:
+    label: SEO / web specialist
+    first: seo-opportunities
+    then: [content-gaps, channel-attribution]
+  sponsorship-specialist:
+    label: Sponsorship / advertising specialist
+    first: media-kit
+    then: [audience-insights, sponsor-recap]
+  data-analyst:
+    label: Data analyst
+    first: kpi-scorecard
+    then: [channel-attribution, weekly-pulse]
+  developer:
+    label: Developer
+    first: connection-check
+    then: [start]
+  other:
+    label: Other
+    first: start
+    then: []
+
+# Until the "first" skill of a role is available, onboarding falls back to the
+# first available skill in this order that fits the user's goal and connections.
+mvp_fallback_order: [media-kit, seo-opportunities, content-performance]
+
+skills:
+  onboarding:
+    status: available
+    use_case: Setup
+    summary: 'Create the brand folder, capture your role and goal, connect each platform the easiest way.'
+    roles: [all]
+    needs: {}
+    metrics: []
+    next:
+      - {skill: start, why: See which reports you can run now.}
+
+  start:
+    status: available
+    use_case: Setup
+    summary: '"What can I do?": your suggested skills, what is available with your connections, what connecting one more platform would unlock.'
+    roles: [all]
+    needs: {}
+    metrics: []
+    next: []
+
+  connection-check:
+    status: available
+    use_case: Setup
+    summary: 'One cheap call per connected platform to confirm it works, with one useful number from each.'
+    roles: [developer, data-analyst]
+    example_goals: ["is everything connected?", "why is my report missing TikTok?"]
+    needs: {}
+    metrics: []
+    next:
+      - {skill: start, why: Pick a report now that the connections are confirmed.}
+
+  media-kit:
+    status: available
+    use_case: Sponsorship & monetisation
+    summary: 'Sponsor-facing media kit (or a one-page pitch for one platform/sponsor) built from your real audience and engagement numbers.'
+    roles: [sponsorship-specialist, marketing-manager]
+    example_goals: ["land more advertisers", "pitch a tyre brand", "build a media kit", "show sponsors our reach"]
+    needs: {any_of: [youtube, instagram, facebook, tiktok, spotify, ga4]}
+    metrics: [cross.total_followers, cross.monthly_reach, youtube.subscribers, youtube.avg_views_per_video_30d,
+              youtube.engagement_rate, instagram.followers, instagram.reach, instagram.engagement_rate,
+              facebook.fans, tiktok.followers, tiktok.avg_views_per_video, tiktok.engagement_rate,
+              spotify.episode_count, spotify.release_cadence_days, ga4.active_users, gsc.impressions,
+              cross.est_cpm_value]
+    next:
+      - {skill: audience-insights, why: Add demographics and geography to the pitch.}
+      - {skill: content-performance, why: Find the formats that would carry a sponsor's message best.}
+
+  seo-opportunities:
+    status: available
+    use_case: Website & SEO
+    summary: 'Prioritised change list per page from Search Console: striking-distance queries, titles/meta to rewrite, cannibalisation, indexing issues.'
+    roles: [seo-specialist, marketing-manager, data-analyst]
+    example_goals: ["more traffic from Google", "improve search CTR", "which pages should I fix first?"]
+    needs: {all_of: [gsc]}
+    metrics: [gsc.clicks, gsc.impressions, gsc.ctr, gsc.avg_position, gsc.striking_distance_queries,
+              gsc.non_brand_click_share, ga4.organic_search_sessions, ga4.engagement_rate]
+    next:
+      - {skill: content-ideas, why: Turn the striking-distance queries into videos and posts.}
+      - {skill: content-gaps, why: Find queries with impressions but no good page yet.}
+
+  content-performance:
+    status: available
+    use_case: Social media
+    summary: 'What works on your social channels: each post against the channel median at the same age, and the format/topic/length/day patterns behind the winners, with first change proposals.'
+    roles: [social-media-manager, marketing-manager, sponsorship-specialist]
+    example_goals: ["grow YouTube", "which videos work best?", "what should we post more of?", "why are views down?"]
+    needs: {any_of: [youtube, instagram, tiktok, facebook]}
+    metrics: [youtube.views, youtube.avg_views_per_video_30d, youtube.engagement_rate, youtube.shorts_share,
+              instagram.reach, instagram.engagement_rate, tiktok.avg_views_per_video, tiktok.engagement_rate,
+              facebook.engagement_rate]
+    next:
+      - {skill: social-improvement-plan, why: Turn the patterns into a full per-platform change plan.}
+      - {skill: media-kit, why: Use the best-performing formats as sponsor proof points.}
+
+  # ── Planned (Phase 5 / 7). Listed so `start` can say what is coming. ─────
+  kpi-scorecard:
+    status: planned
+    use_case: Measure & report
+    summary: 'Funnel KPIs month-over-month and year-over-year across all connected platforms.'
+    roles: [marketing-manager, data-analyst]
+    needs: {any_of: [ga4, gsc, youtube, instagram, facebook, tiktok]}
+    metrics: []
+    next: []
+  social-improvement-plan:
+    status: planned
+    use_case: Social media
+    summary: 'Per-platform change proposals (cadence, timing, formats, hooks, titles, captions), each with the metric to watch.'
+    roles: [social-media-manager, marketing-manager]
+    needs: {any_of: [youtube, instagram, tiktok, facebook]}
+    metrics: []
+    next: []
+  content-ideas:
+    status: planned
+    use_case: Social media
+    summary: 'Topic backlog from top posts, search queries and comments, plus repurposing ideas.'
+    roles: [social-media-manager]
+    needs: {any_of: [youtube, instagram, tiktok, gsc]}
+    metrics: []
+    next: []
+  campaign-planner:
+    status: planned
+    use_case: Campaigns
+    summary: 'Campaign ideas and a plan grounded in your data, with KPI targets and a UTM plan.'
+    roles: [marketing-manager]
+    needs: {any_of: [ga4, youtube, instagram, facebook, tiktok]}
+    metrics: []
+    next: []
+  campaign-report:
+    status: planned
+    use_case: Campaigns
+    summary: 'A campaign''s results against your baseline.'
+    roles: [marketing-manager]
+    needs: {all_of: [ga4]}
+    metrics: []
+    next: []
+  content-gaps:
+    status: planned
+    use_case: Website & SEO
+    summary: 'Queries with impressions but no good page; new page/article proposals.'
+    roles: [seo-specialist]
+    needs: {all_of: [gsc]}
+    metrics: []
+    next: []
+  channel-attribution:
+    status: planned
+    use_case: Measure & report
+    summary: 'Channel groups and the social → site → key-event funnel; UTM hygiene.'
+    roles: [seo-specialist, data-analyst]
+    needs: {all_of: [ga4]}
+    metrics: []
+    next: []
+  audience-insights:
+    status: planned
+    use_case: Audience
+    summary: 'Demographics, geography and interests across platforms.'
+    roles: [sponsorship-specialist]
+    needs: {any_of: [youtube, instagram, facebook, ga4]}
+    metrics: []
+    next: []
+  sponsor-recap:
+    status: planned
+    use_case: Sponsorship & monetisation
+    summary: 'Post-campaign proof-of-delivery report for a sponsor.'
+    roles: [sponsorship-specialist]
+    needs: {any_of: [youtube, instagram, facebook, tiktok, ga4]}
+    metrics: []
+    next: []
+  weekly-pulse:
+    status: planned
+    use_case: Measure & report
+    summary: 'Anomaly alerts for big swings, on a schedule.'
+    roles: [data-analyst]
+    needs: {any_of: [ga4, gsc, youtube]}
+    metrics: []
+    next: []

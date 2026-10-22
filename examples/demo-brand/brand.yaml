@@ -1,0 +1,17 @@
+# DEMO BRAND: fictional, for trying Funnelwise without real accounts.
+# All numbers in data/ are fabricated and labelled as demo data.
+brand:
+  name: "Acme Outdoor (demo)"
+  short: "Acme"
+  website: "https://www.acme-outdoor.example"
+  language: "en"
+  colors: { primary: "#1F6F5C", accent: "#F2A541" }
+connectors:
+  youtube:   { via: manual, channel_id: "UCdemo00000000000000000" }
+  instagram: { via: manual, username: "acmeoutdoor.demo" }
+  tiktok:    { via: manual, username: "acmeoutdoor.demo" }
+  ga4:       { via: manual, property_id: "000000000" }
+competitors: []
+sponsorship:
+  past_sponsors: ["Northwind Bikes (demo)"]
+  rate_card_currency: "EUR"

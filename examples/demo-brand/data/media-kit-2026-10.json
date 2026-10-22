@@ -1,0 +1,40 @@
+{
+  "topic": "media-kit",
+  "period": {
+    "from": "2026-10-01",
+    "to": "2026-10-31"
+  },
+  "generated_at": "2026-10-31T09:00:00+00:00",
+  "brand": "Acme Outdoor (demo)",
+  "language": "en",
+  "metrics": {
+    "youtube.subscribers": 19650,
+    "youtube.avg_views_per_video_30d": 7100,
+    "youtube.engagement_rate": 0.038,
+    "instagram.followers": 9350,
+    "instagram.reach": 47800,
+    "instagram.engagement_rate": 0.058,
+    "tiktok.followers": 14900,
+    "tiktok.avg_views_per_video": 11200,
+    "ga4.active_users": 15800,
+    "cross.total_followers": 43900,
+    "spotify.episode_count": null
+  },
+  "source": {
+    "youtube.subscribers": "manual (demo)",
+    "youtube.avg_views_per_video_30d": "manual (demo)",
+    "youtube.engagement_rate": "manual (demo)",
+    "instagram.followers": "manual (demo)",
+    "instagram.reach": "manual (demo)",
+    "instagram.engagement_rate": "manual (demo)",
+    "tiktok.followers": "manual (demo)",
+    "tiktok.avg_views_per_video": "manual (demo)",
+    "ga4.active_users": "manual (demo)",
+    "cross.total_followers": "manual (demo)",
+    "spotify.episode_count": "manual (demo)"
+  },
+  "caveats": [
+    "DEMO DATA: fabricated numbers for a fictional brand."
+  ],
+  "extra": {}
+}

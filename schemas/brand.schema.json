@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://funnelwise.local/schemas/brand.schema.json",
+  "title": "Funnelwise brand.yaml",
+  "description": "Brand settings for one Funnelwise brand folder. Mirrors servers/lib/workspace.py validate_brand(); tests/test_workspace.py keeps the two in sync. Credentials never go in this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["brand"],
+  "properties": {
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "language"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "short": {"type": "string"},
+        "website": {"type": "string", "pattern": "^https?://"},
+        "language": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$", "description": "Report language, e.g. en, bg, pt-BR"},
+        "logo": {"type": "string", "description": "Path relative to the brand folder"},
+        "colors": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "primary": {"$ref": "#/$defs/hex"},
+            "accent": {"$ref": "#/$defs/hex"}
+          }
+        }
+      }
+    },
+    "connectors": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "ga4": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "property_id": {"$ref": "#/$defs/id"}},
+                "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["property_id"]}},
+        "gsc": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "site_url": {"type": "string", "pattern": "^(https?://|sc-domain:)"}},
+                "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["site_url"]}},
+        "youtube": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "channel_id": {"$ref": "#/$defs/id"}, "handle": {"type": "string"}},
+                    "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["channel_id"]}},
+        "instagram": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "username": {"$ref": "#/$defs/username"}, "business_account_id": {"$ref": "#/$defs/id"}},
+                      "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["username"]}},
+        "facebook": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "page_id": {"$ref": "#/$defs/id"}},
+                     "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["page_id"]}},
+        "tiktok": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "username": {"$ref": "#/$defs/username"}},
+                   "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["username"]}},
+        "spotify": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "show_id": {"$ref": "#/$defs/id"}},
+                    "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["show_id"]}},
+        "semrush": {"$ref": "#/$defs/connector", "properties": {"via": {"$ref": "#/$defs/via"}, "domain": {"$ref": "#/$defs/id"}, "database": {"type": "string"}},
+                    "additionalProperties": false, "if": {"properties": {"via": {"const": "own"}}}, "then": {"required": ["domain"]}}
+      }
+    },
+    "competitors": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "website": {"type": "string"},
+          "youtube": {"type": "string"},
+          "tiktok": {"type": "string"},
+          "instagram": {"type": "string"},
+          "spotify": {"type": "string"}
+        }
+      }
+    },
+    "sponsorship": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "past_sponsors": {"type": "array", "items": {"type": "string"}},
+        "rate_card_currency": {"type": "string", "pattern": "^[A-Z]{3}$"}
+      }
+    }
+  },
+  "$defs": {
+    "hex": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+    "via": {"enum": ["own", "metricool", "windsor", "google-ga4-mcp", "semrush", "manual"]},
+    "id": {"type": ["string", "integer"], "minLength": 1, "pattern": "\\S"},
+    "username": {"type": "string", "pattern": "^[^@]"},
+    "connector": {"type": "object", "required": ["via"]}
+  }
+}
