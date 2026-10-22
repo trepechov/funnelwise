@@ -35,41 +35,13 @@ Other paths: `google-ga4-mcp` (Google's official server; needs gcloud sign-in) �
 
 Other paths: `windsor` → its Search Console source (verify).
 
-## YouTube (`via: own` → server `youtube`, youtube-studio-mcp)
+## YouTube, Instagram, Facebook (`via: metricool` / `windsor` / `manual`)
 
-Always pass the brand's `channel_id`. Never `mine: true` (the write guard blocks it).
-
-| Metric | Tool call |
-|---|---|
-| `youtube.subscribers` | `youtube_get_channel(channel_id)` → `subscriberCount` (public, rounded) |
-| `youtube.avg_views_per_video_30d`, `youtube.engagement_rate`, `youtube.shorts_share` | `youtube_list_videos(channel_id, …)` then `youtube_get_video` for stats/duration; compute per metrics.yaml |
-| `youtube.views`, `youtube.watch_time_hours`, `youtube.avg_view_duration` | `youtube_analytics_overview` (needs the **channel owner/manager's** sign-in, see the YouTube guide) |
-| Traffic sources, demographics, geography, retention (extra) | `youtube_analytics_traffic_sources`, `_demographics`, `_geography`, `_retention` (same sign-in) |
-| Search demand (extra, content ideas) | `youtube_search_suggestions(query)` |
-
-If Analytics tools return no rows for the brand channel, the sign-in belongs to another account.
-Fall back to the public Data API numbers and list the Analytics metrics as not available.
-
-Other paths: `metricool` → YouTube channel/video stats (verify which Analytics metrics).
-
-## Instagram (`via: own` → server `instagram`, ig-mcp)
-
-| Metric | Tool call |
-|---|---|
-| `instagram.followers` | `get_profile_info()` → `followers_count` |
-| `instagram.reach`, `instagram.profile_views`, `instagram.website_clicks` | `get_account_insights(metric=…, period="day")` summed over the period |
-| `instagram.engagement_rate` | `get_media_posts(limit)` + `get_media_insights(media_id)` per post (reach, likes, comments, saves, shares) |
-
-Other paths: `metricool` → Instagram account and post stats (verify).
-
-## Facebook (`via: own` → server `facebook`, facebook-mcp-server)
-
-| Metric | Tool call |
-|---|---|
-| `facebook.fans` | `get_page_fan_count()` or `get_page_info()` |
-| `facebook.impressions`, `facebook.engagement_rate` | `get_page_posts()` + `get_post_impressions`, `get_post_reactions_breakdown`, `get_number_of_comments`, `get_post_share_count` per post (needs a **Page** token) |
-
-Other paths: `metricool` → Facebook Page stats (verify).
+Funnelwise has no server of its own for these. Read them through the connector the brand chose;
+the metric ids in `metrics.yaml` stay the same. Which Metricool tools and fields cover each metric
+is still being verified (`docs/spikes/0.3-easy-path-audit.md`); list the metrics a connector can't
+answer as not available. Pass the brand's `channel_id` / `username` / `page_id` and never the
+connector's "mine" default.
 
 ## TikTok (`via: own` → server `tiktok`, official Display API)
 

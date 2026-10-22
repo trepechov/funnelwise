@@ -111,7 +111,7 @@ def test_brand_summary_includes_profile(brand_dir):
     (brand_dir / "notes" / "profile.md").write_text("# Profile\n- **Role:** Data analyst\n")
     out = core.fw_brand()
     assert out["profile"].startswith("# Profile")
-    assert out["connectors"]["youtube"] == {"via": "own", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"}
+    assert out["connectors"]["youtube"] == {"via": "metricool", "channel_id": "UCacme000000000000000000", "handle": "@acmeoutdoor"}
     assert out["not_connected"] == ["semrush"]
 
 

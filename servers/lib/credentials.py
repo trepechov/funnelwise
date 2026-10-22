@@ -19,8 +19,6 @@ KINDS = {
     "google-oauth-client": ("client_secret.json", ["installed.client_id", "installed.client_secret"]),
     "spotify": ("spotify.json", ["client_id", "client_secret"]),
     "tiktok": ("tiktok.json", ["client_key", "client_secret"]),
-    "instagram": ("instagram.json", ["access_token", "business_account_id", "app_id", "app_secret"]),
-    "facebook": ("facebook.json", ["access_token", "page_id"]),
 }
 
 # For connectors running on our own/local servers: alternatives of required files.
@@ -28,20 +26,14 @@ KINDS = {
 NEEDS = {
     "ga4": [["google-service-account.json"]],
     "gsc": [["google-service-account.json"], ["client_secret.json", "gsc_token.json"]],
-    "youtube": [["client_secret.json", "token.json"]],
-    "instagram": [["instagram.json"]],
-    "facebook": [["facebook.json"]],
     "tiktok": [["tiktok.json", "tiktok_token.json"]],
     "spotify": [["spotify.json"]],
 }
 
 NEXT_STEP = {
     "google-service-account.json": "Create a Google service-account key (guide: reference/connector-guides/google.md) and import it with fw_import_credential kind=google-service-account.",
-    "client_secret.json": "Create a Google OAuth client of type Desktop (guide: reference/connector-guides/youtube.md) and import it with kind=google-oauth-client.",
-    "token.json": "Sign in to YouTube once with the youtube_auth tool, as the channel's owner or manager.",
+    "client_secret.json": "Create a Google OAuth client of type Desktop (legacy Search Console sign-in) and import it with kind=google-oauth-client.",
     "gsc_token.json": "Legacy Search Console sign-in; prefer the service account instead.",
-    "instagram.json": "Create a Meta access token (guide: reference/connector-guides/meta.md) and save it with kind=instagram.",
-    "facebook.json": "Create a Page access token (guide: reference/connector-guides/meta.md) and save it with kind=facebook.",
     "tiktok.json": "Create a TikTok developer app (guide: reference/connector-guides/tiktok.md) and save its client key/secret with kind=tiktok.",
     "tiktok_token.json": "Sign in to TikTok once with the tiktok_login_start tool, as the brand's TikTok account.",
     "spotify.json": "Create a Spotify developer app (guide: reference/connector-guides/spotify.md) and save its client ID/secret with kind=spotify.",

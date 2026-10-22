@@ -40,6 +40,8 @@ SCOPE_FIELDS = {
     "spotify": "show_id",
     "semrush": "domain",
 }
+# No Funnelwise server for these: connect them through Metricool, Windsor or manual exports.
+NO_OWN = ("youtube", "instagram", "facebook")
 OPTIONAL_FIELDS = {
     "youtube": ("handle",),
     "instagram": ("business_account_id",),
@@ -148,6 +150,8 @@ def validate_brand(data: object) -> List[str]:
         via = block.get("via")
         if via not in VIA_OPTIONS:
             errors.append(f"connectors.{name}.via must be one of {', '.join(VIA_OPTIONS)}")
+        if via == "own" and name in NO_OWN:
+            errors.append(f"connectors.{name}.via `own` is not available: Funnelwise has no {name} server (use metricool, windsor or manual)")
         field = SCOPE_FIELDS[name]
         value = block.get(field)
         if via == "own" and (value is None or str(value).strip() == ""):

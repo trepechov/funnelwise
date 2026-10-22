@@ -29,27 +29,6 @@
       "args": [
         "${CLAUDE_PLUGIN_ROOT}/servers/tiktok.py"
       ]
-    },
-    "youtube": {
-      "command": "python3",
-      "args": [
-        "${CLAUDE_PLUGIN_ROOT}/servers/thirdparty.py",
-        "youtube"
-      ]
-    },
-    "instagram": {
-      "command": "python3",
-      "args": [
-        "${CLAUDE_PLUGIN_ROOT}/servers/thirdparty.py",
-        "instagram"
-      ]
-    },
-    "facebook": {
-      "command": "python3",
-      "args": [
-        "${CLAUDE_PLUGIN_ROOT}/servers/thirdparty.py",
-        "facebook"
-      ]
     }
   }
 }

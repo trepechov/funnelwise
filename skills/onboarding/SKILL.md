@@ -59,8 +59,8 @@ For each platform, pick the path and follow its guide in `reference/connector-gu
 | Platform | Easiest path | Guide |
 |---|---|---|
 | GA4, Search Console | One Google service-account key for both | `google.md` |
-| YouTube | Channel owner/manager signs in once | `youtube.md` |
-| Instagram, Facebook | Metricool connector (sign-in); developer path: Meta token | `meta.md` |
+| YouTube | Metricool connector (sign-in) | `youtube.md` |
+| Instagram, Facebook | Metricool connector (sign-in) | `meta.md` |
 | TikTok | Own TikTok app in Sandbox + one sign-in | `tiktok.md` |
 | Spotify | Own Spotify app (2 values) | `spotify.md` |
 
@@ -71,15 +71,14 @@ Rules while connecting:
 - **Secrets via files.** Use `fw_import_credential(kind, path)` for downloaded files (it locks the
   file to the user and tells them to delete the download). Use `fw_save_credential` only for values
   that come as text (Spotify/TikTok IDs and secrets), and say they pass through the chat.
-- **Sign-ins without a terminal:** TikTok → `tiktok_login_start`, then `tiktok_login_status`;
-  YouTube → `youtube_auth` (developer path).
+- **Sign-in without a terminal:** TikTok → `tiktok_login_start`, then `tiktok_login_status`.
 - **Easy path (`via: metricool` etc.):** the user adds the connector in Claude's settings
   (Settings → Connectors). Funnelwise can't install it for them. After they do, check that its tools
   answer.
 - **Validate live** right after each one: one cheap call (the same ones `connection-check` uses).
   ✅ → next platform. ❌ → explain the error with the guide's troubleshooting table; offer to retry
   or skip. Don't loop more than twice on the same error.
-- Warn once, if they use Metricool or the developer Meta/YouTube servers: these connectors also
+- Warn once, if they use Metricool: this connector also
   contain posting/deleting tools; Funnelwise blocks them, and nothing will be posted.
 
 ## 4. First report

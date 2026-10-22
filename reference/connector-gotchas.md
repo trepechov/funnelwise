@@ -4,7 +4,7 @@ Things that went wrong with real accounts and how to recognise them. Brand-speci
 in the brand folder's `notes/`, not here. Each connector guide in `connector-guides/` has its own
 troubleshooting table; this file is the cross-platform summary for reports and the connection check.
 
-## Google (GA4, Search Console, YouTube)
+## Google (GA4, Search Console) and YouTube
 
 - **Service account beats personal OAuth.** A service account sees only the properties it was added
   to. A personal OAuth token sees every site/property the person has, so a report could pick up the
@@ -27,8 +27,8 @@ troubleshooting table; this file is the cross-platform summary for reports and t
   subcode 2069032 even though page-level reads work.
 - Long-lived user tokens expire after ~60 days; System User tokens and Page tokens derived from a
   long-lived user token don't (verify in the Access Token Debugger).
-- The developer-path servers list write tools (post, reply, delete, DM). Request read-only
-  permissions so they fail at the API too; Funnelwise's write guard blocks them anyway.
+- Connectors such as Metricool list write tools (post, reply, delete, DM). Request read-only
+  permissions where you can; Funnelwise's write guard blocks them anyway.
 - Engagement rate denominators differ: Instagram per reach, Facebook per impressions.
 
 ## TikTok
@@ -45,10 +45,3 @@ troubleshooting table; this file is the cross-platform summary for reports and t
 - No listener/stream/audience numbers via any API; only Spotify for Creators has them.
 - Since 2026, Web API access returns HTTP 403 "Active premium subscription required for the owner
   of the app" when the app owner's account has no Premium.
-
-## Third-party MCP servers
-
-- Pin `mcp<2` for the Python servers that were written against the 1.x SDK (ig-mcp and others
-  crash on startup with `'Server' object has no attribute 'list_tools'`).
-- ig-mcp's console script never awaits `main()`: run `python -m src.instagram_mcp_server`.
-- facebook-mcp-server has no `pyproject.toml`: it runs from a pinned git checkout.

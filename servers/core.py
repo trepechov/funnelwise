@@ -28,7 +28,7 @@ from lib.workspace import (BRAND_FILE, CONNECTORS, SCOPE_FIELDS, Brand, load_bra
 VERSION = load_yaml(PLUGIN_ROOT / ".claude-plugin" / "plugin.json")["version"]  # JSON is valid YAML
 CATALOG_FILE = PLUGIN_ROOT / "reference" / "skill-catalog.yaml"
 FOLDERS = ("reports", "data", "notes")
-OWN_PATH = ("ga4", "gsc", "spotify", "tiktok", "youtube", "instagram", "facebook")
+OWN_PATH = ("ga4", "gsc", "spotify", "tiktok")
 
 server = Server("funnelwise", VERSION, instructions=(
     "Funnelwise core tools. Call fw_brand first in every Funnelwise workflow: it returns the active brand "
@@ -250,7 +250,7 @@ def fw_import_credential(kind: str, source_path: str) -> dict:
     Preferred over fw_save_credential because the secret never passes through the chat.
 
     Args:
-        kind: google-service-account, google-oauth-client, spotify, tiktok, instagram or facebook.
+        kind: google-service-account, google-oauth-client, spotify or tiktok.
         source_path: Absolute path of the downloaded .json file, e.g. ~/Downloads/acme-1234.json.
     """
     brand = load_brand()
@@ -272,8 +272,7 @@ def fw_save_credential(kind: str, values: dict) -> dict:
     one exists.
 
     Args:
-        kind: spotify ({client_id, client_secret}), tiktok ({client_key, client_secret}), instagram
-            ({access_token, business_account_id, app_id, app_secret}) or facebook ({access_token, page_id}).
+        kind: spotify ({client_id, client_secret}), tiktok ({client_key, client_secret}).
         values: The fields listed for the kind.
     """
     if kind in ("google-service-account", "google-oauth-client"):

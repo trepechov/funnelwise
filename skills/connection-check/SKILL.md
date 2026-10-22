@@ -18,9 +18,7 @@ retries, no debugging, no re-authenticating inside this check. Load any deferred
 |---|---|---|
 | GA4 | `ga_run_report(date_from="yesterday", date_to="today", metrics=[activeUsers or eventCount], dimensions=[one of: country, deviceCategory, eventName, sessionDefaultChannelGroup], limit=5)` | the dimension and the metric |
 | Search Console | `gsc_performance_overview(date_from=today-5d, date_to=today-3d, compare_previous=false)` | which number anchors the insight: clicks, impressions, CTR, position |
-| YouTube | `youtube_get_channel(channel_id=<brand channel_id>)`, never `mine: true` | subscribers vs. video count vs. total views |
-| Instagram | `get_account_insights(metric=<one of reach, profile_views, website_clicks, accounts_engaged>, period="day")` | the metric |
-| Facebook | `get_page_fan_count()` or `get_page_info()` | the two tools |
+| YouTube, Instagram, Facebook | One cheap profile/stats call on the connector the brand chose (Metricool etc.), for the brand's own channel/username/Page ID | the one number it returned |
 | TikTok | `tiktok_get_profile()` or `tiktok_list_videos(max_count=3)` | profile totals vs. newest/most-viewed of 3 |
 | Spotify | `spotify_get_show_episodes(limit=3)` | newest episode vs. days between the last two |
 

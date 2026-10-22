@@ -21,7 +21,7 @@ brand:
 connectors:
   ga4:       { via: own, property_id: "123456789" }                 # Admin > Property details
   gsc:       { via: own, site_url: "https://www.acme-outdoor.example/" }   # or sc-domain:acme-outdoor.example
-  youtube:   { via: own, channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", handle: "@acmeoutdoor" }
+  youtube:   { via: metricool, channel_id: "UCxxxxxxxxxxxxxxxxxxxxxx", handle: "@acmeoutdoor" }
   instagram: { via: metricool, username: "acmeoutdoor" }
   facebook:  { via: metricool, page_id: "100000000000000" }
   tiktok:    { via: own, username: "acmeoutdoor" }

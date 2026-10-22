@@ -28,10 +28,12 @@ account from `brand.yaml`. Credentials stay on your computer; nothing is sent to
 - **Python 3.9+** as `python3`. Preinstalled on macOS; on a new Mac the first `python3` run may ask
   to install the Command Line Tools (or run `xcode-select --install` once). No packages to install.
 - **`openssl`** for the Google key (preinstalled on macOS and Linux).
-- Optional, only for the developer path of YouTube Analytics, Instagram and Facebook:
-  [`uv`](https://docs.astral.sh/uv/) and `git`. The default path for those uses the Metricool
-  connector instead.
+- Nothing else: no `uv`, Node, `git` or pip packages. PyYAML, Jinja2 and MarkupSafe are vendored.
 - Windows is not supported yet.
+- Some platforms need an account, not an install: YouTube, Instagram and Facebook go through the
+  Metricool connector (added in Claude's connector settings), and GA4, Search Console, Spotify and
+  TikTok need the brand's own credentials. See "How connecting works" below.
+- Not yet tested on a completely clean machine; the pilot kit in `docs/pilot/` covers that check.
 
 ## Install
 
@@ -61,7 +63,7 @@ Plugins shows the update).
 | Platform | Easiest path | Limits to know |
 |---|---|---|
 | GA4 + Search Console | One Google service-account key (`reference/connector-guides/google.md`) | — |
-| YouTube | Public stats right away; Analytics needs the channel **owner/manager**'s sign-in | Brand Account: a Studio Editor's sign-in returns the wrong channel |
+| YouTube | Metricool connector (sign-in) | Which Analytics metrics it exposes is still being verified |
 | Instagram, Facebook | Metricool connector (sign-in) | Metricool free plan: 30 days of history |
 | TikTok | Own TikTok app in Sandbox + one sign-in, no terminal | Display API: profile and per-video totals only |
 | Spotify | Own Spotify app (2 values) | No listener or stream numbers exist in any Spotify API |
@@ -92,8 +94,8 @@ snapshot of the same topic (`fw_diff_snapshot`). KPI definitions: `reference/met
 | Path | Contents |
 |---|---|
 | `.claude-plugin/` | `plugin.json`, `marketplace.json` |
-| `.mcp.json` | The 8 MCP servers (5 own, 3 pinned third-party via `servers/thirdparty.py`) |
-| `servers/` | `core.py` (brand folder, credentials, snapshots, reports, catalog), `ga4.py`, `search_console.py`, `spotify.py`, `tiktok.py`, `thirdparty.py`; `lib/` shared code; `_vendor/` PyYAML, Jinja2, MarkupSafe |
+| `.mcp.json` | The 5 own MCP servers |
+| `servers/` | `core.py` (brand folder, credentials, snapshots, reports, catalog), `ga4.py`, `search_console.py`, `spotify.py`, `tiktok.py`; `lib/` shared code; `_vendor/` PyYAML, Jinja2, MarkupSafe |
 | `hooks/` | `session_start.py` (brand scope summary), `write_guard.py` (read-only + scope guard) |
 | `skills/` | The six skills |
 | `reference/` | `metrics.yaml`, `skill-catalog.yaml`, `sources.md`, `connector-guides/`, `connector-gotchas.md`, `report-templates/` |
@@ -104,7 +106,8 @@ snapshot of the same topic (`fw_diff_snapshot`). KPI definitions: `reference/met
 ## Development
 
 ```bash
-uv run --python 3.9 --with pytest --with jsonschema --no-project pytest      # tests on the oldest supported Python
+/usr/bin/python3 -m venv .venv && .venv/bin/pip install pytest jsonschema   # once; /usr/bin/python3 is the oldest supported (3.9)
+.venv/bin/pytest                                                               # tests
 /usr/bin/python3 dev/smoke.py                                                  # every server starts and lists tools
 FUNNELWISE_BRAND_DIR=/path/to/test-brand /usr/bin/python3 dev/smoke.py --live  # one real read call per own server
 claude --plugin-dir .                                                          # try a local checkout in Claude Code
